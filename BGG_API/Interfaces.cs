@@ -2,9 +2,18 @@
 
 namespace BGG
 {
+    public interface IGame
+    {
+        string Id { get; set; }
+        string Name { get; set; }
+    }
+    public interface IGeekItem
+    {
+        IGame Game { get; set; }
+    }
     public interface IPlay
     {
-        string GameId { get; set; }
+        IGame Game { get; set; }
         int Minutes { get; set; }
     }
     public interface IUser
