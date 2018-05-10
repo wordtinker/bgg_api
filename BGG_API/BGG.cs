@@ -13,7 +13,7 @@ namespace BGG
 {
     public class Game : IGame
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
     }
     public class GeekItem : IGeekItem
@@ -59,7 +59,7 @@ namespace BGG
                         {
                             Game = new Game
                             {
-                                Id = node.Descendants("item").First().Attribute("objectid").Value
+                                Id = int.Parse(node.Descendants("item").First().Attribute("objectid").Value)
                             },
                             Minutes = int.Parse(node.Attribute("length").Value)
                         };
@@ -72,7 +72,7 @@ namespace BGG
                         {
                             Game = new Game
                             {
-                               Id = node.Attribute("objectid").Value,
+                               Id = int.Parse(node.Attribute("objectid").Value),
                                Name = node.Attribute("objectname").Value
                             }
                         };
