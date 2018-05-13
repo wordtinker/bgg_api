@@ -46,6 +46,7 @@ namespace BGG
     }
     internal static class URI
     {
+        internal static string Hot => "https://boardgamegeek.com/xmlapi2/hot?type=boardgame";
         internal static string GeekList => "https://www.boardgamegeek.com/xmlapi/geeklist/{0}";
         internal static string Plays => "https://www.boardgamegeek.com/xmlapi2/plays?username={0}&page={1}";
         internal static string Ratings => "https://api.geekdo.com/api/collections?objectid={0}&objecttype=thing&oneperuser=1&pageid={1}&rated=1&require_review=true&showcount=50&sort=review_tstamp";
@@ -64,6 +65,19 @@ namespace BGG
                             Minutes = int.Parse(node.Attribute("length").Value)
                         };
             return plays.ToList<IPlay>();
+        }
+        public static List<IGeekItem> FilterHotItems(this XDocument doc)
+        {
+            var items = from node in doc.Root.Elements("item")
+                        select new GeekItem
+                        {
+                            Game = new Game
+                            {
+                                Id = int.Parse(node.Attribute("id").Value),
+                                Name = node.Element("name").Attribute("value").Value
+                            }
+                        };
+            return items.ToList<IGeekItem>();
         }
         public static List<IGeekItem> FilterGeekItems(this XDocument doc)
         {
@@ -135,6 +149,11 @@ namespace BGG
             XDocument doc = await GetGeekList(listId);
             return doc.FilterGeekItems();
         }
+        public async Task<List<IGeekItem>> GetHotAsync()
+        {
+            XDocument doc = await GetHot();
+            return doc.FilterHotItems();
+        }
         private async Task<XDocument> GetPlaysAsync(string userName, int pageNumber)
         {
             string URI = string.Format(BGG.URI.Plays, userName, pageNumber);
@@ -143,6 +162,11 @@ namespace BGG
         private async Task<XDocument> GetGeekList(int listId)
         {
             string URI = string.Format(BGG.URI.GeekList, listId);
+            return await GetXMLFromAsync(URI);
+        }
+        private async Task<XDocument> GetHot()
+        {
+            string URI = BGG.URI.Hot;
             return await GetXMLFromAsync(URI);
         }
         private async Task<string> GetRatingsAsync(int gameId, int pageNumber)
