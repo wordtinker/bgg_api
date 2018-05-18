@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Globalization;
 
 namespace BGG
 {
@@ -64,12 +65,24 @@ namespace BGG
         public string Title { get; set; }
         public int? Designer { get; set; }
         public int? Publisher { get; set; }
+        public int? PublishedFrom { get; set; }
+        public int? PublishedTo { get; set; }
+        public int? MinimumAge { get; set; }
+        public double? AvgRatingFrom { get; set; }
+        public double? AvgRatingTo { get; set; }
+        public int? AvgRatingUsers { get; set; }
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder($"https://boardgamegeek.com/search/boardgame/page/{Page}?advsearch=1");
             sb.Append($"&q={Title}");
             sb.Append(Designer != null ? $"&include[designerid]={Designer}" : string.Empty);
             sb.Append(Publisher != null ? $"&include[publisherid]={Publisher}" : string.Empty);
+            sb.Append(PublishedFrom != null ? $"&range[yearpublished][min]={PublishedFrom}" : string.Empty);
+            sb.Append(PublishedTo != null ? $"&range[yearpublished][max]={PublishedTo}" : string.Empty);
+            sb.Append(MinimumAge != null ? $"&range[minage][max]={MinimumAge}" : string.Empty);
+            sb.Append(AvgRatingFrom != null ? $"&floatrange[avgrating][min]={AvgRatingFrom?.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
+            sb.Append(AvgRatingTo != null ? $"&floatrange[avgrating][max]={AvgRatingTo?.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
+            sb.Append(AvgRatingUsers != null ? $"&range[numvoters][min]={AvgRatingUsers}" : string.Empty);
             return sb.ToString();
         }
     }
