@@ -92,18 +92,15 @@ namespace BGG
                         };
             return plays.ToList<IPlay>();
         }
-        public static List<IGeekItem> FilterHotItems(this XDocument doc)
+        public static List<IGame> FilterHotItems(this XDocument doc)
         {
             var items = from node in doc.Root.Elements("item")
-                        select new GeekItem
+                        select new Game
                         {
-                            Game = new Game
-                            {
-                                Id = int.Parse(node.Attribute("id").Value),
-                                Name = node.Element("name").Attribute("value").Value
-                            }
+                            Id = int.Parse(node.Attribute("id").Value),
+                            Name = node.Element("name").Attribute("value").Value
                         };
-            return items.ToList<IGeekItem>();
+            return items.ToList<IGame>();
         }
         public static List<IGeekItem> FilterGeekItems(this XDocument doc)
         {
@@ -187,9 +184,8 @@ namespace BGG
             XDocument doc = await GetGeekList(listId);
             return doc.FilterGeekItems();
         }
-        public async Task<List<IGeekItem>> GetHotAsync()
+        public async Task<List<IGame>> GetHotAsync()
         {
-            // TODO drop IGEEK
             XDocument doc = await GetHot();
             return doc.FilterHotItems();
         }
@@ -201,8 +197,6 @@ namespace BGG
             for (int page = 1; ; page++)
             {
                 query.Page = page;
-                // TODO Test
-                Console.WriteLine(query.ToString());
                 int asBefore = games.Count;
                 HtmlDocument doc = await DoQuery(query);
                 List<IGame> gamesOnPage = doc.FilterGames();
