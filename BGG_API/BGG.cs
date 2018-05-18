@@ -17,6 +17,18 @@ namespace BGG
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public override bool Equals(object obj)
+        {
+            Game other = obj as Game;
+            if (other == null)
+                return false;
+            else
+                return Id.Equals(other.Id);
+        }
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
     }
     public class GeekItem : IGeekItem
     {
@@ -183,19 +195,23 @@ namespace BGG
         }
         public async Task<List<IGame>> GetQueryAsync(Query query)
         {
-            List<IGame> games = new List<IGame>();
+            HashSet<IGame> games = new HashSet<IGame>();
+            //List<IGame> games = new List<IGame>();
             // Keep looking for pages with games
-            do
+            for (int page = 1; ; page++)
             {
+                query.Page = page;
+                // TODO Test
+                Console.WriteLine(query.ToString());
+                int asBefore = games.Count;
                 HtmlDocument doc = await DoQuery(query);
                 List<IGame> gamesOnPage = doc.FilterGames();
-                if (gamesOnPage.Count == 0) break;
+                games.UnionWith(gamesOnPage);
+                if (games.Count == asBefore) break;
                 // wait before asking for result again
                 await Task.Delay(config.Delay);
-                query.Page++;
-                games.AddRange(gamesOnPage);
-            } while (true);
-            return games;
+            }
+            return games.ToList();
         }
         private async Task<XDocument> GetPlaysAsync(string userName, int pageNumber)
         {
