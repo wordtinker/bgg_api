@@ -71,6 +71,10 @@ namespace BGG
         public double? AvgRatingFrom { get; set; }
         public double? AvgRatingTo { get; set; }
         public int? AvgRatingUsers { get; set; }
+        public double? AvgWeightFrom { get; set; }
+        public double? AvgWeightTo { get; set; }
+        public int? AvgWeightUsers { get; set; }
+        public bool NoExp { get; set; } = true;
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder($"https://boardgamegeek.com/search/boardgame/page/{Page}?advsearch=1");
@@ -83,6 +87,10 @@ namespace BGG
             sb.Append(AvgRatingFrom != null ? $"&floatrange[avgrating][min]={AvgRatingFrom?.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
             sb.Append(AvgRatingTo != null ? $"&floatrange[avgrating][max]={AvgRatingTo?.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
             sb.Append(AvgRatingUsers != null ? $"&range[numvoters][min]={AvgRatingUsers}" : string.Empty);
+            sb.Append(AvgWeightFrom != null ? $"&floatrange[avgweight][min]={AvgWeightFrom?.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
+            sb.Append(AvgWeightTo != null ? $"&floatrange[avgweight][max]={AvgWeightTo?.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
+            sb.Append(AvgWeightUsers != null ? $"&range[numweights][min]={AvgWeightUsers}" : string.Empty);
+            sb.Append(NoExp ? $"&nosubtypes[]=boardgameexpansion" : string.Empty);
             return sb.ToString();
         }
     }
