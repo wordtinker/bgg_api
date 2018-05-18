@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using HtmlAgilityPack;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -43,6 +45,18 @@ namespace BGG
     {
         // ms
         public int Delay { get; set; } = 1000;
+    }
+    public class Query
+    {
+        // TODO
+        internal int Page { get; set; } = 1;
+        public string Title { get; set; }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder($"https://boardgamegeek.com/search/boardgame/page/{Page}?advsearch=1");
+            sb.Append($"&q={Title}");
+            return sb.ToString();
+        }
     }
     internal static class URI
     {
@@ -104,6 +118,18 @@ namespace BGG
             }
             return ratings;
         }
+        public static List<IGame> FilterGames(this HtmlDocument doc)
+        {
+            HtmlNode table = doc.DocumentNode
+                .SelectSingleNode("//table[contains(@class, 'collection_table')]");
+            var links = table.SelectNodes("//td[contains(@class, 'collection_objectname')]/div/a") ?? Enumerable.Empty<HtmlNode>();
+            var games = links.Select(a => new Game
+            {
+                Id = int.Parse(a.GetAttributeValue("href", string.Empty).Split('/')[2]),
+                Name = a.InnerText
+            }).ToList<IGame>();
+            return games;
+        }
     }
 
     public class API
@@ -151,8 +177,25 @@ namespace BGG
         }
         public async Task<List<IGeekItem>> GetHotAsync()
         {
+            // TODO drop IGEEK
             XDocument doc = await GetHot();
             return doc.FilterHotItems();
+        }
+        public async Task<List<IGame>> GetQueryAsync(Query query)
+        {
+            List<IGame> games = new List<IGame>();
+            // Keep looking for pages with games
+            do
+            {
+                HtmlDocument doc = await DoQuery(query);
+                List<IGame> gamesOnPage = doc.FilterGames();
+                if (gamesOnPage.Count == 0) break;
+                // wait before asking for result again
+                await Task.Delay(config.Delay);
+                query.Page++;
+                games.AddRange(gamesOnPage);
+            } while (true);
+            return games;
         }
         private async Task<XDocument> GetPlaysAsync(string userName, int pageNumber)
         {
@@ -168,6 +211,18 @@ namespace BGG
         {
             string URI = BGG.URI.Hot;
             return await GetXMLFromAsync(URI);
+        }
+        private async Task<HtmlDocument> DoQuery(Query query)
+        {
+            using(var client = new WebClient())
+            {
+                // Have to use webclient for https
+                Uri uri = new Uri(query.ToString());
+                string page = await client.DownloadStringTaskAsync(uri);
+                HtmlDocument doc = new HtmlDocument();
+                doc.LoadHtml(page);
+                return doc;
+            }
         }
         private async Task<string> GetRatingsAsync(int gameId, int pageNumber)
         {
