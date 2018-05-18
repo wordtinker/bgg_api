@@ -60,13 +60,16 @@ namespace BGG
     }
     public class Query
     {
-        // TODO
         internal int Page { get; set; } = 1;
         public string Title { get; set; }
+        public int? Designer { get; set; }
+        public int? Publisher { get; set; }
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder($"https://boardgamegeek.com/search/boardgame/page/{Page}?advsearch=1");
             sb.Append($"&q={Title}");
+            sb.Append(Designer != null ? $"&include[designerid]={Designer}" : string.Empty);
+            sb.Append(Publisher != null ? $"&include[publisherid]={Publisher}" : string.Empty);
             return sb.ToString();
         }
     }
