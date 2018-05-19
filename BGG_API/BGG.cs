@@ -75,6 +75,14 @@ namespace BGG
         public double? AvgWeightTo { get; set; }
         public int? AvgWeightUsers { get; set; }
         public bool NoExp { get; set; } = true;
+        public Dictionary<Category, bool?> Categories { get; } = new Dictionary<Category, bool?>();
+        public Query()
+        {
+            foreach (Category cat in Enum.GetValues(typeof(Category)))
+            {
+                Categories[cat] = null;
+            }
+        }
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder($"https://boardgamegeek.com/search/boardgame/page/{Page}?advsearch=1");
@@ -91,6 +99,13 @@ namespace BGG
             sb.Append(AvgWeightTo != null ? $"&floatrange[avgweight][max]={AvgWeightTo?.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
             sb.Append(AvgWeightUsers != null ? $"&range[numweights][min]={AvgWeightUsers}" : string.Empty);
             sb.Append(NoExp ? $"&nosubtypes[]=boardgameexpansion" : string.Empty);
+            foreach (var kvp in Categories)
+            {
+                string line = kvp.Value != null
+                    ? $"&{(kvp.Value == false ? "no" : string.Empty)}propertyids[]={(int)kvp.Key}"
+                    : string.Empty;
+                sb.Append(line);
+            }
             return sb.ToString();
         }
     }

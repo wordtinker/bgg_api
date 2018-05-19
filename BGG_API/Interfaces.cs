@@ -2,6 +2,14 @@
 
 namespace BGG
 {
+
+    public enum Category
+    {
+        // TODO fulll ist
+        AbstractStrategy = 1009,
+        ActionDexterity = 1032,
+        Adventure = 1022
+    }
     public interface IGame
     {
         int Id { get; set; }
