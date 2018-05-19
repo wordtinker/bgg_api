@@ -59,6 +59,11 @@ namespace BGG
         // ms
         public int Delay { get; set; } = 1000;
     }
+    public class CategoryDescriptor
+    {
+        public int Id { get; internal set; }
+        public bool? On { get; set; } = null;
+    }
     public class Query
     {
         internal int Page { get; set; } = 1;
@@ -75,14 +80,34 @@ namespace BGG
         public double? AvgWeightTo { get; set; }
         public int? AvgWeightUsers { get; set; }
         public bool NoExp { get; set; } = true;
-        public Dictionary<Category, bool?> Categories { get; } = new Dictionary<Category, bool?>();
-        public Query()
+        public Dictionary<string, CategoryDescriptor> Categories { get; } = new Dictionary<string, CategoryDescriptor>()
         {
-            foreach (Category cat in Enum.GetValues(typeof(Category)))
-            {
-                Categories[cat] = null;
-            }
-        }
+            {"AbstractStrategy", new CategoryDescriptor{ Id = 1009 } },
+            {"ActionDexterity", new CategoryDescriptor{ Id = 1032} },
+            {"Adventure", new CategoryDescriptor{ Id = 1022 } },
+            {"AgeOfReason", new CategoryDescriptor { Id = 2726 } },
+            {"AmericanCivilWar", new CategoryDescriptor{ Id = 1048} },
+            {"AmericanIndianWars", new CategoryDescriptor{ Id = 1108} }
+            // TODO full list
+        };
+        public Dictionary<string, CategoryDescriptor> Mechanics { get; } = new Dictionary<string, CategoryDescriptor>()
+        {
+            {"Acting", new CategoryDescriptor{ Id = 2073} },
+            {"ActionMovementProgramming", new CategoryDescriptor{ Id = 2689} },
+            {"ActionPointAllowance", new CategoryDescriptor{ Id = 2001} }
+            // TODO full list
+        };
+        public Dictionary<string, CategoryDescriptor> Domains { get; } = new Dictionary<string, CategoryDescriptor>()
+        {
+            {"Abstract", new CategoryDescriptor{ Id = 4666 } },
+            {"Children", new CategoryDescriptor{ Id = 4665 } },
+            {"Customizable", new CategoryDescriptor { Id = 4667 } },
+            {"Family", new CategoryDescriptor{ Id = 5499 } },
+            {"Party", new CategoryDescriptor{ Id = 5498 } },
+            {"Strategy", new CategoryDescriptor{ Id = 5497 } },
+            {"Thematic", new CategoryDescriptor{ Id = 5496 } },
+            {"Wargame", new CategoryDescriptor{ Id = 4664 } }
+        };
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder($"https://boardgamegeek.com/search/boardgame/page/{Page}?advsearch=1");
@@ -99,10 +124,17 @@ namespace BGG
             sb.Append(AvgWeightTo != null ? $"&floatrange[avgweight][max]={AvgWeightTo?.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
             sb.Append(AvgWeightUsers != null ? $"&range[numweights][min]={AvgWeightUsers}" : string.Empty);
             sb.Append(NoExp ? $"&nosubtypes[]=boardgameexpansion" : string.Empty);
-            foreach (var kvp in Categories)
+            foreach (var val in Categories.Values.Union(Mechanics.Values))
             {
-                string line = kvp.Value != null
-                    ? $"&{(kvp.Value == false ? "no" : string.Empty)}propertyids[]={(int)kvp.Key}"
+                string line = val.On != null
+                    ? $"&{(val.On == false ? "no" : string.Empty)}propertyids[]={val.Id}"
+                    : string.Empty;
+                sb.Append(line);
+            }
+            foreach (var val in Domains.Values)
+            {
+                string line = val.On != null
+                    ? $"&{(val.On == false ? "no" : string.Empty)}familyids[]={val.Id}"
                     : string.Empty;
                 sb.Append(line);
             }
