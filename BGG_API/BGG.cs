@@ -59,11 +59,13 @@ namespace BGG
         // ms
         public int Delay { get; set; } = 1000;
     }
+    [Serializable]
     public class CategoryDescriptor
     {
         public int Id { get; internal set; }
         public bool? On { get; set; } = null;
     }
+    [Serializable]
     public class Query
     {
         internal int Page { get; set; } = 1;
@@ -87,14 +89,35 @@ namespace BGG
             {"Adventure", new CategoryDescriptor{ Id = 1022 } },
             {"AgeOfReason", new CategoryDescriptor { Id = 2726 } },
             {"AmericanCivilWar", new CategoryDescriptor{ Id = 1048} },
-            {"AmericanIndianWars", new CategoryDescriptor{ Id = 1108} }
+            {"AmericanIndianWars", new CategoryDescriptor{ Id = 1108} },
+            {"AmericanRevolutionaryWar", new CategoryDescriptor{ Id = 1075 } },
+            {"AmericanWest", new CategoryDescriptor{ Id = 1055 } },
+            {"Ancient", new CategoryDescriptor{ Id = 1050} },
+            {"Animals", new CategoryDescriptor{ Id = 1089 } },
+            {"Arabian", new CategoryDescriptor{ Id = 1052} },
+            {"AviationFight", new CategoryDescriptor{ Id = 2650} },
+            {"Bluffing", new CategoryDescriptor{Id = 1023} },
+            {"Book", new CategoryDescriptor{ Id = 1117 } },
+            {"CardGame", new CategoryDescriptor { Id = 1002 } },
+            {"Children", new CategoryDescriptor { Id = 1041 } },
+            {"CityBuilding", new CategoryDescriptor { Id = 1029 } },
+            {"CivilWar", new CategoryDescriptor { Id = 1102 } },
+            {"Civilization", new CategoryDescriptor { Id = 1015 } },
+            {"Collectible", new CategoryDescriptor { Id = 1044 } },
+            {"ComicStrip", new CategoryDescriptor { Id = 1116 } },
             // TODO full list
         };
         public Dictionary<string, CategoryDescriptor> Mechanics { get; } = new Dictionary<string, CategoryDescriptor>()
         {
             {"Acting", new CategoryDescriptor{ Id = 2073} },
             {"ActionMovementProgramming", new CategoryDescriptor{ Id = 2689} },
-            {"ActionPointAllowance", new CategoryDescriptor{ Id = 2001} }
+            {"ActionPointAllowance", new CategoryDescriptor{ Id = 2001} },
+            {"AreaControl", new CategoryDescriptor { Id = 2080 } },
+            {"AreaEnclosure", new CategoryDescriptor { Id = 2043 } },
+            {"AreaMovement", new CategoryDescriptor { Id = 2046 } },
+            {"AreaImpulse", new CategoryDescriptor { Id = 2021 } },
+            {"Auction", new CategoryDescriptor { Id = 2012 } },
+            {"Betting", new CategoryDescriptor { Id = 2014 } },
             // TODO full list
         };
         public Dictionary<string, CategoryDescriptor> Domains { get; } = new Dictionary<string, CategoryDescriptor>()
