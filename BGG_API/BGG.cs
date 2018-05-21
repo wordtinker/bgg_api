@@ -269,6 +269,7 @@ namespace BGG
     }
     internal static class URI
     {
+        internal static string Top => "https://boardgamegeek.com/browse/boardgame/page/{0}";
         internal static string Hot => "https://boardgamegeek.com/xmlapi2/hot?type=boardgame";
         internal static string GeekList => "https://www.boardgamegeek.com/xmlapi/geeklist/{0}";
         internal static string Plays => "https://www.boardgamegeek.com/xmlapi2/plays?username={0}&page={1}";
@@ -352,7 +353,8 @@ namespace BGG
             // Keep looking for pages with ratings
             for (int page = 1; ; page++)
             {
-                string json = await GetRatingsAsync(gameId, page);
+                string URI = string.Format(BGG.URI.Ratings, gameId, page);
+                string json = await GetStringFromAsync(URI);
                 List<IRating> ratingsOnPage = json.FilterRatings();
                 if (ratingsOnPage.Count == 0) break;
                 // wait before asking for result again
@@ -367,7 +369,8 @@ namespace BGG
             // Keep looking for pages with plays
             for (int page = 1; ; page++)
             {
-                XDocument doc = await GetPlaysAsync(user, page);
+                string URI = string.Format(BGG.URI.Plays, user, page);
+                XDocument doc = await GetXMLFromAsync(URI);
                 List<IPlay> playsOnPage = doc.FilterPlays();
                 if (playsOnPage.Count == 0) break;
                 // wait before asking for result again
@@ -378,24 +381,26 @@ namespace BGG
         }
         public async Task<List<IGeekItem>> GetGeekListAsync(int listId)
         {
-            XDocument doc = await GetGeekList(listId);
+            string URI = string.Format(BGG.URI.GeekList, listId);
+            XDocument doc = await GetXMLFromAsync(URI);
             return doc.FilterGeekItems();
         }
         public async Task<List<IGame>> GetHotAsync()
         {
-            XDocument doc = await GetHot();
+            string URI = BGG.URI.Hot;
+            XDocument doc = await GetXMLFromAsync(URI);
             return doc.FilterHotItems();
         }
         public async Task<List<IGame>> GetQueryAsync(Query query)
         {
             HashSet<IGame> games = new HashSet<IGame>();
-            //List<IGame> games = new List<IGame>();
             // Keep looking for pages with games
             for (int page = 1; ; page++)
             {
                 query.Page = page;
                 int asBefore = games.Count;
-                HtmlDocument doc = await DoQuery(query);
+                string URI = query.ToString();
+                HtmlDocument doc = await GetHtmlFromAsync(URI);
                 List<IGame> gamesOnPage = doc.FilterGames();
                 games.UnionWith(gamesOnPage);
                 if (games.Count == asBefore) break;
@@ -404,36 +409,39 @@ namespace BGG
             }
             return games.ToList();
         }
-        private async Task<XDocument> GetPlaysAsync(string userName, int pageNumber)
+        public async Task<List<IGame>> GetTopAsync(int max)
         {
-            string URI = string.Format(BGG.URI.Plays, userName, pageNumber);
-            return await GetXMLFromAsync(URI);
+            if (max <= 0) throw new ArgumentOutOfRangeException();
+
+            int pageSize = 100;
+            int depth = max / pageSize + (max % pageSize > 0 ? 1 : 0);
+
+            List<IGame> games = new List<IGame>();
+            for (int i = 1; i <= depth; i++)
+            {
+                string URI = string.Format(BGG.URI.Top, i);
+                HtmlDocument doc = await GetHtmlFromAsync(URI);
+                List<IGame> gamesOnPage = doc.FilterGames();
+                games.AddRange(gamesOnPage);
+                // wait before asking for result again
+                await Task.Delay(config.Delay);
+            }
+            return games;
         }
-        private async Task<XDocument> GetGeekList(int listId)
+        private async Task<HtmlDocument> GetHtmlFromAsync(string URI)
         {
-            string URI = string.Format(BGG.URI.GeekList, listId);
-            return await GetXMLFromAsync(URI);
-        }
-        private async Task<XDocument> GetHot()
-        {
-            string URI = BGG.URI.Hot;
-            return await GetXMLFromAsync(URI);
-        }
-        private async Task<HtmlDocument> DoQuery(Query query)
-        {
-            using(var client = new WebClient())
+            using (var client = new WebClient())
             {
                 // Have to use webclient for https
-                Uri uri = new Uri(query.ToString());
+                Uri uri = new Uri(URI);
                 string page = await client.DownloadStringTaskAsync(uri);
                 HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(page);
                 return doc;
             }
         }
-        private async Task<string> GetRatingsAsync(int gameId, int pageNumber)
+        private async Task<string> GetStringFromAsync(string URI)
         {
-            string URI = string.Format(BGG.URI.Ratings, gameId, pageNumber);
             using (HttpClient httpClient = new HttpClient())
             {
                 return await httpClient.GetStringAsync(URI);
