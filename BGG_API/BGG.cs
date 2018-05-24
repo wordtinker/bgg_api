@@ -20,15 +20,18 @@ namespace BGG
         public string Name { get; set; }
         public override bool Equals(object obj)
         {
-            Game other = obj as Game;
-            if (other == null)
-                return false;
-            else
+            if (obj is Game other)
                 return Id.Equals(other.Id);
+            else
+                return false;
         }
         public override int GetHashCode()
         {
             return Id.GetHashCode();
+        }
+        public override string ToString()
+        {
+            return $"https://boardgamegeek.com/boardgame/{Id}";
         }
     }
     public class GeekItem : IGeekItem
